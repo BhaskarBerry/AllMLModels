@@ -1,27 +1,27 @@
-# -*- coding: utf-8 -*-
-
+#-------------------------------------------
+#import Libraries
 import time
 import math
 import scipy.io as sio
 import numpy as np
 import matplotlib.pyplot as plt
-
-tic = time.time
-
 import os
+#-------------------------------------------
+# Read the data into data
+tic = time.time
 path  = os.path.abspath("AnomalyDetection/Data/anomalyData.mat")
-
 data = sio.loadmat(path)
 
 X = data['X']
 X_val = data['Xval']
 y_val = data['yval']
+
+#--------------------------------------------
 y_val
 
 plt.scatter(X[:,0], X[:,1], marker='X')
 plt.xlabel('Latency(ms)')
 plt.ylabel("Throughput mb/s ")
-
 
 #-----------------------------------
 def estimateGaussian(X):
@@ -55,25 +55,19 @@ def multivariateGaussian(X, mu, sigma2):
      val = np.reshape((-0.5)*np.sum(np.multiply((X@inv),X), 1),(np.size(X, 0), 1))
      
      p = np.power(2*pi, -n/2)*np.power(det, -0.5)*np.exp(val)
-     
      return p
- 
 
 p = multivariateGaussian(X, mu, sigma2)
-
 print(p.shape)
-
 pval = multivariateGaussian(X_val, mu, sigma2)
 
 #-----------------------------------
 def selectThreshHold(yval, pval):
-    
     F1 = 0
     bestF1 = 0
     bestEpsilon = 0
     
     stepsize = (np.max(pval) - np.min(pval))/1000
-        
     epsVec = np.arange(np.min(pval), np.max(pval), stepsize)
     noe = len(epsVec)
     
@@ -104,9 +98,8 @@ def selectThreshHold(yval, pval):
 
 F1, epsilon = selectThreshHold(y_val, pval)
 print('Epsilon and F1 are:',epsilon, F1)
-
 outl = (p < epsilon)
-
+#-----------------------------------
 def findIndices(binVec):
     l = []
     for i in range(len(binVec)):
@@ -119,9 +112,9 @@ count_outliers = len(listOfOutliers)
 print('\n\nNumber of outliers:', count_outliers)
 print('\n',listOfOutliers)
 
-
 plt.scatter(X[:, 0], X[:, 1], marker = "x")
 plt.xlabel('Latency(ms)')
 plt.ylabel('Throughput(mb/s)')
 plt.scatter(X[listOfOutliers,0], X[listOfOutliers, 1], facecolors = 'none', edgecolors = 'r')
 plt.show()
+#-----------------------------------
